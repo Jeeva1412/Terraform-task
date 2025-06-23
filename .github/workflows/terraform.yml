@@ -101,6 +101,82 @@
 
 
 
+# #correct code
+
+# name: Terraform AWS EC2
+
+# on:
+#   push:
+#     branches:
+#       - main
+#   workflow_dispatch:
+
+# permissions:
+#   contents: read
+#   id-token: write
+#   actions: read
+
+# jobs:
+#   terraform:
+#     name: Secure EC2 Deployment with Checkov
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
+
+#       - name: Setup Terraform CLI
+#         uses: hashicorp/setup-terraform@v3
+#         with:
+#           terraform_version: 1.6.6
+
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: us-east-1
+
+#       - name: Install Checkov
+#         run: pip install checkov
+
+#       - name: Run Checkov Scan
+#         id: checkov
+#         run: |
+#           checkov -d . --quiet
+#           echo "Checkov passed ✅"
+
+#       - name: Terraform Init
+#         run: terraform init
+
+#       - name: Terraform Validate
+#         run: terraform validate
+
+   
+#       # - name: Terraform Plan
+#       #   run: terraform plan -out=tfplan
+
+#       # - name: Terraform Apply
+#       #   run: terraform apply -auto-approve tfplan
+
+#       - name: Terraform Destroy
+#         run: terraform destroy -auto-approve
+
+#       - name: Notify Slack
+#         if: always()  # Runs whether the workflow passes or fails
+#         env:
+#           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+#         run: |
+#           STATUS="✅ Success"
+#           if [ "${{ job.status }}" != "success" ]; then
+#             STATUS="❌ Failed"
+#           fi
+#           MESSAGE="*Terraform EC2 Deployment Status:* ${STATUS}\nRepo: ${{ github.repository }}\nBranch: ${{ github.ref_name }}\nCommit: ${{ github.sha }}"
+
+#           curl -X POST -H 'Content-type: application/json' \
+#           --data "{\"text\":\"${MESSAGE}\"}" \
+#           $SLACK_WEBHOOK_URL
+
 
 name: Terraform AWS EC2
 
@@ -117,7 +193,7 @@ permissions:
 
 jobs:
   terraform:
-    name: Secure EC2 Deployment with Checkov
+    name: Secure EC2 Deployment with Slack Alerts
     runs-on: ubuntu-latest
 
     steps:
@@ -143,35 +219,59 @@ jobs:
         id: checkov
         run: |
           checkov -d . --quiet
-          echo "Checkov passed ✅"
+
+      - name: Slack Notify - Checkov Failed
+        if: failure() && steps.checkov.outcome == 'failure'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{
+            "attachments": [{
+              "color": "#ff0000",
+              "title": "Checkov Scan Failed ❌",
+              "text": "Repository: '${{ github.repository }}'\nBranch: '${{ github.ref_name }}'\nCommit: '${{ github.sha }}'"
+            }]
+          }' $SLACK_WEBHOOK_URL
 
       - name: Terraform Init
         run: terraform init
 
       - name: Terraform Validate
+        id: validate
         run: terraform validate
 
-   
-      # - name: Terraform Plan
-      #   run: terraform plan -out=tfplan
-
-      # - name: Terraform Apply
-      #   run: terraform apply -auto-approve tfplan
-
-      - name: Terraform Destroy
-        run: terraform destroy -auto-approve
-
-      - name: Notify Slack
-        if: always()  # Runs whether the workflow passes or fails
+      - name: Slack Notify - Validate Failed
+        if: failure() && steps.validate.outcome == 'failure'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          STATUS="✅ Success"
-          if [ "${{ job.status }}" != "success" ]; then
-            STATUS="❌ Failed"
-          fi
-          MESSAGE="*Terraform EC2 Deployment Status:* ${STATUS}\nRepo: ${{ github.repository }}\nBranch: ${{ github.ref_name }}\nCommit: ${{ github.sha }}"
-
           curl -X POST -H 'Content-type: application/json' \
-          --data "{\"text\":\"${MESSAGE}\"}" \
-          $SLACK_WEBHOOK_URL
+          --data '{
+            "attachments": [{
+              "color": "#FFA500",
+              "title": "Terraform Validate Failed ❌",
+              "text": "Repository: '${{ github.repository }}'\nBranch: '${{ github.ref_name }}'\nCommit: '${{ github.sha }}'"
+            }]
+          }' $SLACK_WEBHOOK_URL
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+
+      - name: Terraform Apply
+        id: apply
+        run: terraform apply -auto-approve tfplan
+
+      - name: Slack Notify - Apply Failed
+        if: failure() && steps.apply.outcome == 'failure'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{
+            "attachments": [{
+              "color": "#DC143C",
+              "title": "Terraform Apply Failed ❌",
+              "text": "Repository: '${{ github.repository }}'\nBranch: '${{ github.ref_name }}'\nCommit: '${{ github.sha }}'"
+            }]
+          }' $SLACK_WEBHOOK_URL
