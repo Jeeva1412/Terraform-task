@@ -177,7 +177,9 @@
 #           --data "{\"text\":\"${MESSAGE}\"}" \
 #           $SLACK_WEBHOOK_URL
 
-name: Terraform AWS EC2
+
+
+  name: Terraform AWS EC2
 
 on:
   push:
@@ -224,14 +226,24 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          curl -X POST -H 'Content-type: application/json' \
-          --data '{
+          REPO="${{ github.repository }}"
+          BRANCH="${{ github.ref_name }}"
+          TRIGGERED_BY="${{ github.actor }}"
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          LINK="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          PAYLOAD=$(cat <<EOF
+          {
             "attachments": [{
               "color": "#FF0000",
               "title": "❌ Checkov Scan Failed",
-              "text": "*Repo:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Folder:* . (root)\n*Triggered by:* ${{ github.actor }}\n*Commit message:* ${{ github.event.head_commit.message }}\n*Link:* <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow Run>"
+              "text": "*Repo:* ${REPO}\\n*Branch:* ${BRANCH}\\n*Folder:* . (root)\\n*Triggered by:* ${TRIGGERED_BY}\\n*Commit message:* ${COMMIT_MSG}\\n*Link:* <${LINK}|View Workflow Run>"
             }]
-          }' $SLACK_WEBHOOK_URL
+          }
+EOF
+          )
+
+          curl -X POST -H "Content-type: application/json" --data "${PAYLOAD}" "$SLACK_WEBHOOK_URL"
 
       - name: Terraform Init
         run: terraform init
@@ -245,14 +257,24 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          curl -X POST -H 'Content-type: application/json' \
-          --data '{
+          REPO="${{ github.repository }}"
+          BRANCH="${{ github.ref_name }}"
+          TRIGGERED_BY="${{ github.actor }}"
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          LINK="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          PAYLOAD=$(cat <<EOF
+          {
             "attachments": [{
               "color": "#FFA500",
               "title": "❌ Terraform Validate Failed",
-              "text": "*Repo:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Folder:* . (root)\n*Triggered by:* ${{ github.actor }}\n*Commit message:* ${{ github.event.head_commit.message }}\n*Link:* <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow Run>"
+              "text": "*Repo:* ${REPO}\\n*Branch:* ${BRANCH}\\n*Folder:* . (root)\\n*Triggered by:* ${TRIGGERED_BY}\\n*Commit message:* ${COMMIT_MSG}\\n*Link:* <${LINK}|View Workflow Run>"
             }]
-          }' $SLACK_WEBHOOK_URL
+          }
+EOF
+          )
+
+          curl -X POST -H "Content-type: application/json" --data "${PAYLOAD}" "$SLACK_WEBHOOK_URL"
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan
@@ -266,11 +288,21 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          curl -X POST -H 'Content-type: application/json' \
-          --data '{
+          REPO="${{ github.repository }}"
+          BRANCH="${{ github.ref_name }}"
+          TRIGGERED_BY="${{ github.actor }}"
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          LINK="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          PAYLOAD=$(cat <<EOF
+          {
             "attachments": [{
               "color": "#DC143C",
               "title": "❌ Terraform Apply Failed",
-              "text": "*Repo:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Folder:* . (root)\n*Triggered by:* ${{ github.actor }}\n*Commit message:* ${{ github.event.head_commit.message }}\n*Link:* <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow Run>"
+              "text": "*Repo:* ${REPO}\\n*Branch:* ${BRANCH}\\n*Folder:* . (root)\\n*Triggered by:* ${TRIGGERED_BY}\\n*Commit message:* ${COMMIT_MSG}\\n*Link:* <${LINK}|View Workflow Run>"
             }]
-          }' $SLACK_WEBHOOK_URL
+          }
+EOF
+          )
+
+          curl -X POST -H "Content-type: application/json" --data "${PAYLOAD}" "$SLACK_WEBHOOK_URL"
