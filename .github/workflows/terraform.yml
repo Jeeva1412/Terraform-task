@@ -35,12 +35,12 @@
 #     - name: Terraform Apply
 #       run: terraform apply -auto-approve
 
-
-
-name: Terraform Destroy AWS EC2
+name: Terraform Destroy EC2
 
 on:
-  workflow_dispatch:  # Allows manual trigger
+  push:
+    branches:
+      - main
 
 jobs:
   terraform:
@@ -48,10 +48,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
+    - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup Terraform CLI
+    - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
       with:
         terraform_version: 1.6.6
