@@ -21,6 +21,13 @@
 # }
 
 
+
+
+
+
+
+#pass code for checkov
+
 terraform {
   backend "s3" {
     bucket         = "terraform-statefile-storagebucket"
