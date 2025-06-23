@@ -81,7 +81,7 @@ jobs:
       - name: Run Checkov Scan
         id: checkov
         run: |
-          checkov -d . --quiet --soft-fail false
+          checkov -d . --quiet
           echo "Checkov passed ✅"
 
       - name: Terraform Init
