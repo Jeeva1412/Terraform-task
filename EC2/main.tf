@@ -7,3 +7,4 @@ resource "aws_instance" "this" {
     Name = "Terraform-EC2"
   }
 }
+
