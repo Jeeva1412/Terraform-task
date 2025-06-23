@@ -177,7 +177,6 @@
 #           --data "{\"text\":\"${MESSAGE}\"}" \
 #           $SLACK_WEBHOOK_URL
 
-
 name: Terraform AWS EC2
 
 on:
@@ -228,9 +227,9 @@ jobs:
           curl -X POST -H 'Content-type: application/json' \
           --data '{
             "attachments": [{
-              "color": "#ff0000",
-              "title": "Checkov Scan Failed ❌",
-              "text": "Repository: '${{ github.repository }}'\nBranch: '${{ github.ref_name }}'\nCommit: '${{ github.sha }}'"
+              "color": "#FF0000",
+              "title": "❌ Checkov Scan Failed",
+              "text": "*Repo:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Folder:* . (root)\n*Triggered by:* ${{ github.actor }}\n*Commit message:* ${{ github.event.head_commit.message }}\n*Link:* <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow Run>"
             }]
           }' $SLACK_WEBHOOK_URL
 
@@ -250,8 +249,8 @@ jobs:
           --data '{
             "attachments": [{
               "color": "#FFA500",
-              "title": "Terraform Validate Failed ❌",
-              "text": "Repository: '${{ github.repository }}'\nBranch: '${{ github.ref_name }}'\nCommit: '${{ github.sha }}'"
+              "title": "❌ Terraform Validate Failed",
+              "text": "*Repo:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Folder:* . (root)\n*Triggered by:* ${{ github.actor }}\n*Commit message:* ${{ github.event.head_commit.message }}\n*Link:* <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow Run>"
             }]
           }' $SLACK_WEBHOOK_URL
 
@@ -271,7 +270,7 @@ jobs:
           --data '{
             "attachments": [{
               "color": "#DC143C",
-              "title": "Terraform Apply Failed ❌",
-              "text": "Repository: '${{ github.repository }}'\nBranch: '${{ github.ref_name }}'\nCommit: '${{ github.sha }}'"
+              "title": "❌ Terraform Apply Failed",
+              "text": "*Repo:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Folder:* . (root)\n*Triggered by:* ${{ github.actor }}\n*Commit message:* ${{ github.event.head_commit.message }}\n*Link:* <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow Run>"
             }]
           }' $SLACK_WEBHOOK_URL
