@@ -230,14 +230,14 @@ jobs:
         run: terraform validate
 
    
-      # - name: Terraform Plan
-      #   run: terraform plan -out=tfplan
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
 
-      # - name: Terraform Apply
-      #   run: terraform apply -auto-approve tfplan
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
 
-      - name: Terraform Destroy
-        run: terraform destroy -auto-approve
+      # - name: Terraform Destroy
+      #   run: terraform destroy -auto-approve
 
       - name: Notify Slack
         if: always()  # Runs whether the workflow passes or fails
